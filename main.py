@@ -15,6 +15,8 @@ prompt = [
 ]
 
 options = inquirer.prompt(prompt)["options"]
+if not options:
+    exit("Error: You must select at least one option.")
 
 generated = []
 
