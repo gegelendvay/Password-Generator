@@ -12,28 +12,25 @@ try:
 except ValueError:
     exit("Error: Password length must be a number.")
 
-#Prompt the user to choose from the available charachter types
-prompt = [
-    inquirer.Checkbox("options", "Please select the desired charachter types for your password", ["Lowercase", "Uppercase", "Numbers", "Symbols"], default=["Lowercase"], carousel=True)
-]
+charSets = {
+    "Lowercase": string.ascii_lowercase,
+    "Uppercase": string.ascii_uppercase,
+    "Numbers": string.digits,
+    "Symbols": string.punctuation
+}
 
-options = inquirer.prompt(prompt)["options"]
-if not options:
+#Prompt the user to choose from the available charachter types
+prompt = [inquirer.Checkbox("options", "Please select the desired charachter types for your password", charSets.keys(), default=["Lowercase"], carousel=True)]
+
+selected = inquirer.prompt(prompt)["options"]
+if not selected:
     exit("Error: You must select at least one option.")
 
 generated = []
 
 for i in range(length):
-    #For each iteration, randomly select a charachter type from the selected options
-    current = random.choice(options)
-    if "Lowercase" in current:
-        generated.append(random.choice(string.ascii_lowercase))
-    elif "Uppercase" in current:
-        generated.append(random.choice(string.ascii_uppercase))
-    elif "Numbers" in current:
-        generated.append(random.choice(string.digits))
-    elif "Symbols" in current:
-        generated.append(random.choice(string.punctuation))
+    #For each iteration, randomly select a charachter type from the selected options and add it to a list of generated charachters
+    generated.append(random.choice(charSets[random.choice(selected)]))
 
 random.shuffle(generated)
 password = "".join(generated)
