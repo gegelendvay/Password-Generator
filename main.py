@@ -37,7 +37,10 @@ password = "".join(generated)
 
 #Print the generated password, and copy it to the clipboard
 print(f'Generated password: {password}')
-pyperclip.copy(password)
+try:
+    pyperclip.copy(password)
+except pyperclip.PyperclipException:
+    print('Could not copy the password to your clipboard.')
 
 #Password strength checker function
 def passwordStrength(password):
