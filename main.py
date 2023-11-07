@@ -1,66 +1,65 @@
 import inquirer
 import pyperclip
-import random
-import re
+import secrets
 import string
 
 print("Welcome to the Python Password Generator!")
 
-#Check if user input for the password length is an integer or not
-try:
-    length = int(input("How long would you like your password to be? "))
-except ValueError:
-    exit("Error: Password length must be a number.")
+# Improved input handling
+while True:
+    try:
+        length = int(input("How long would you like your password to be? "))
+        if length <= 0:
+            print("Please enter a positive number.")
+            continue
+        break
+    except ValueError:
+        print("Error: Password length must be a number.")
 
-charSets = {
+char_sets = {
     "Lowercase": string.ascii_lowercase,
     "Uppercase": string.ascii_uppercase,
     "Numbers": string.digits,
     "Symbols": string.punctuation
 }
 
-#Prompt the user to choose from the available charachter types
-prompt = [inquirer.Checkbox("options", "Please select the desired charachter types for your password", charSets.keys(), default=["Lowercase"], carousel=True)]
+prompt = [
+    inquirer.Checkbox("options",
+                      message="Please select the desired character types for your password",
+                      choices=list(char_sets.keys()),
+                      default=["Lowercase"],
+                      carousel=True)
+]
 
-selected = inquirer.prompt(prompt)["options"]
-if not selected:
+selected_types = inquirer.prompt(prompt)["options"]
+if not selected_types:
     exit("Error: You must select at least one option.")
 
-generated = []
+# Ensure at least one character from each selected set is included
+selected_chars = "".join([secrets.choice(char_sets[type]) for type in selected_types])
+required_length = max(length, len(selected_types))
+remaining_chars = "".join([char_sets[type] for type in selected_types])
 
-for i in range(length):
-    #For each iteration, randomly select a charachter type from the selected options and add it to a list of generated charachters
-    generated.append(random.choice(charSets[random.choice(selected)]))
-
-random.shuffle(generated)
+generated = [secrets.choice(remaining_chars) for _ in range(required_length - len(selected_types))]
+generated.extend(selected_chars)
+secrets.SystemRandom().shuffle(generated)
 password = "".join(generated)
 
-#Print the generated password, and copy it to the clipboard
 print(f'Generated password: {password}')
 try:
     pyperclip.copy(password)
+    print('The password has been copied to your clipboard.')
 except pyperclip.PyperclipException:
-    print('Could not copy the password to your clipboard.')
+    print('Could not copy the password to your clipboard. Please copy it manually.')
 
-#Password strength checker function
-def passwordStrength(password):
-    """
-    Determines the strength of the password
-
-    Args:
-        password (str): The password to be checked
-
-    Returns:
-        str: 'Weak' for passwords with less than 9 chars
-
-            'Strong' for passwords that contain a number and/or a capital letter and a symbol
-
-            'Medium' for every other password
-    """
-    if len(password) <= 8:
+# Improved password strength checker function
+def password_strength(password):
+    length = len(password)
+    if length < 8:
         return "Weak"
-    if re.search(r"\d|[A-Z]", password) and re.search(r"[\W_]", password):
+    if (re.search(r"\d", password) and re.search(r"[A-Z]", password) and
+        re.search(r"[\W_]", password) and length >= 12):
         return "Strong"
     return "Medium"
 
-print(f'Password strength: {passwordStrength(password)}')
+print(f'Password strength: {password_strength(password)}')
