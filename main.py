@@ -26,7 +26,8 @@ charSets = {
 }
 
 # Prompt the user to choose from the available character types
-prompt = [inquirer.Checkbox("options", "Please select the desired character types for your password", charSets.keys(),
+prompt = [inquirer.Checkbox("options", "Please use the arrow keys and space bar to select the desired character types "
+                                       "for your password", charSets.keys(),
                             default=["Lowercase"], carousel=True)]
 
 while True:
