@@ -1,3 +1,5 @@
+import termios
+
 import inquirer
 import pyperclip
 import random
@@ -6,11 +8,15 @@ import string
 
 print("Welcome to the Python Password Generator!")
 
-#Check if user input for the password length is an integer or not
-try:
-    length = int(input("How long would you like your password to be? "))
-except ValueError:
-    exit("Error: Password length must be a number.")
+# Check if user input for the password length is an integer or not
+# if not, retry until the user enters a valid input
+
+while True:
+    try:
+        length = int(input("How long would you like your password to be? "))
+        break
+    except ValueError:
+        print("Error: Password length must be a number.")
 
 charSets = {
     "Lowercase": string.ascii_lowercase,
@@ -19,31 +25,42 @@ charSets = {
     "Symbols": string.punctuation
 }
 
-#Prompt the user to choose from the available charachter types
-prompt = [inquirer.Checkbox("options", "Please select the desired charachter types for your password", charSets.keys(), default=["Lowercase"], carousel=True)]
+# Prompt the user to choose from the available character types
+prompt = [inquirer.Checkbox("options", "Please use the arrow keys and space bar to select the desired character types "
+                                       "for your password", charSets.keys(),
+                            default=["Lowercase"], carousel=True)]
 
-selected = inquirer.prompt(prompt)["options"]
-if not selected:
-    exit("Error: You must select at least one option.")
+while True:
+    try:
+        selected = inquirer.prompt(prompt)["options"]
+    except termios.error:
+        exit("A Prompt Error Occurred, are you running this script in a terminal? (inquirer does not work in IDEs)")
+
+    if not selected:
+        print("You must select at least one option.")
+    else:
+        break
 
 generated = []
 
 for i in range(length):
-    #For each iteration, randomly select a charachter type from the selected options and add it to a list of generated charachters
+    # For each iteration, randomly select a character type from the selected options
+    # and add it to a list of generated characters
     generated.append(random.choice(charSets[random.choice(selected)]))
 
 random.shuffle(generated)
 password = "".join(generated)
 
-#Print the generated password, and copy it to the clipboard
+# Print the generated password, and copy it to the clipboard
 print(f'Generated password: {password}')
 try:
     pyperclip.copy(password)
 except pyperclip.PyperclipException:
-    print('Could not copy the password to your clipboard.')
+    print('Could not automatically copy the password to your clipboard, please copy it manually.')
 
-#Password strength checker function
-def passwordStrength(password):
+
+# Password strength checker function
+def password_strength(password):
     """
     Determines the strength of the password
 
@@ -63,4 +80,5 @@ def passwordStrength(password):
         return "Strong"
     return "Medium"
 
-print(f'Password strength: {passwordStrength(password)}')
+
+print(f'Password strength: {password_strength(password)}')
