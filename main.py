@@ -1,16 +1,13 @@
-import termios
-
 import inquirer
 import pyperclip
 import random
 import re
 import string
+import termios
 
 print("Welcome to the Python Password Generator!")
 
-# Check if user input for the password length is an integer or not
-# if not, retry until the user enters a valid input
-
+# Check if user input for the password length is an integer or not if not, retry until the user enters a valid input
 while True:
     try:
         length = int(input("How long would you like your password to be? "))
@@ -26,9 +23,7 @@ charSets = {
 }
 
 # Prompt the user to choose from the available character types
-prompt = [inquirer.Checkbox("options", "Please use the arrow keys and space bar to select the desired character types "
-                                       "for your password", charSets.keys(),
-                            default=["Lowercase"], carousel=True)]
+prompt = [inquirer.Checkbox("options", "Please use the arrow keys and space bar to select the desired character types for your password", charSets.keys(), default=["Lowercase"], carousel=True)]
 
 while True:
     try:
@@ -36,16 +31,14 @@ while True:
     except termios.error:
         exit("A Prompt Error Occurred, are you running this script in a terminal? (inquirer does not work in IDEs)")
 
-    if not selected:
-        print("You must select at least one option.")
-    else:
+    if selected:
         break
+    print("You must select at least one option.")
 
 generated = []
 
 for i in range(length):
-    # For each iteration, randomly select a character type from the selected options
-    # and add it to a list of generated characters
+    # For each iteration, randomly select a character type from the selected options and add it to a list of generated characters
     generated.append(random.choice(charSets[random.choice(selected)]))
 
 random.shuffle(generated)
@@ -58,9 +51,8 @@ try:
 except pyperclip.PyperclipException:
     print('Could not automatically copy the password to your clipboard, please copy it manually.')
 
-
 # Password strength checker function
-def password_strength(password):
+def passwordStrength(password):
     """
     Determines the strength of the password
 
@@ -80,5 +72,4 @@ def password_strength(password):
         return "Strong"
     return "Medium"
 
-
-print(f'Password strength: {password_strength(password)}')
+print(f'Password strength: {passwordStrength(password)}')
