@@ -1,7 +1,7 @@
 import inquirer
 import pyperclip
-import random
 import re
+import secrets
 import string
 import termios
 
@@ -11,6 +11,9 @@ print("Welcome to the Python Password Generator!")
 while True:
     try:
         length = int(input("How long would you like your password to be? "))
+        if length < 1:
+            print("You must enter a number greater than 0.")
+            continue
         break
     except ValueError:
         print("Error: Password length must be a number.")
@@ -30,18 +33,16 @@ while True:
         selected = inquirer.prompt(prompt)["options"]
     except termios.error:
         exit("A Prompt Error Occurred, are you running this script in a terminal? (inquirer does not work in IDEs)")
-
     if selected:
         break
     print("You must select at least one option.")
 
-generated = []
+chars = "".join([secrets.choice(charSets[i]) for i in selected])
+remaining = "".join([charSets[i] for i in selected])
+additional = [secrets.choice(remaining) for _ in range(length - len(selected))]
 
-for i in range(length):
-    # For each iteration, randomly select a character type from the selected options and add it to a list of generated characters
-    generated.append(random.choice(charSets[random.choice(selected)]))
-
-random.shuffle(generated)
+generated = list(chars + "".join(additional))
+secrets.SystemRandom().shuffle(generated)
 password = "".join(generated)
 
 # Print the generated password, and copy it to the clipboard
