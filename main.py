@@ -1,10 +1,10 @@
 import re
 import secrets
 import string
+import sys
 import termios
 import inquirer
 import pyperclip
-import sys
 
 LONGITUD_MIN_CONTRASENA = 8
 
