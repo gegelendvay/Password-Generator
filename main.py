@@ -1,97 +1,113 @@
-import inquirer
-import pyperclip
 import re
 import secrets
 import string
 import termios
+import inquirer
+import pyperclip
+import sys
 
-MIN_PASSWORD_LENGTH = 8
+LONGITUD_MIN_CONTRASENA = 8
 
 
-def get_password_length():
+def obtener_longitud_contrasena():
+    """
+    Obtiene la longitud deseada para la contraseña.
+    """
     while True:
         try:
-            length = int(input("How long would you like your password to be? "))
-            if length < 1:
-                print("You must enter a number greater than 0.")
+            longitud = int(input("¿Cuántos caracteres deseas en tu contraseña? "))
+            if longitud < 1:
+                print("Debes ingresar un número mayor que 0.")
                 continue
-            return length
+            return longitud
         except ValueError:
-            print("Error: Password length must be a number.")
+            print("Error: La longitud de la contraseña debe ser un número.")
 
 
-def get_selected_options(charSets):
-    prompt = [
+def obtener_opciones_seleccionadas(conjuntos_caracteres):
+    """
+    Obtiene las opciones seleccionadas para la contraseña.
+    """
+    pregunta = [
         inquirer.Checkbox(
-            "options",
-            "Please use the arrow keys and space bar to select the desired character types for your password",
-            charSets.keys(),
-            default=["Lowercase"],
+            "opciones",
+            "Utiliza las teclas de flecha y la barra espaciadora para seleccionar los tipos de caracteres deseados para tu contraseña",
+            conjuntos_caracteres.keys(),
+            default=["Minúsculas"],
             carousel=True,
         )
     ]
 
     while True:
         try:
-            selected = inquirer.prompt(prompt)["options"]
+            seleccionadas = inquirer.prompt(pregunta)["opciones"]
         except termios.error:
-            exit(
-                "A Prompt Error Occurred, are you running this script in a terminal? (inquirer does not work in IDEs)"
+            sys.exit(
+                "Ocurrió un error en la consulta. ¿Estás ejecutando este script en una terminal? (Inquirer no funciona en entornos de desarrollo integrados)"
             )
 
-        if selected:
-            return selected
+        if seleccionadas:
+            return seleccionadas
 
-        print("You must select at least one option.")
-
-
-def generate_password(selected, length, charSets):
-    chars = "".join([secrets.choice(charSets[i]) for i in selected])
-    remaining = "".join([charSets[i] for i in selected])
-    additional = [secrets.choice(remaining) for _ in range(length - len(selected))]
-
-    generated = list(chars + "".join(additional))
-    secrets.SystemRandom().shuffle(generated)
-    password = "".join(generated)
-
-    return password
+        print("Debes seleccionar al menos una opción.")
 
 
-def password_strength(password):
-    if len(password) <= MIN_PASSWORD_LENGTH:
-        return "Weak"
-    if re.search(r"\d|[A-Z]", password) and re.search(r"[\W_]", password):
-        return "Strong"
-    return "Medium"
+def generar_contrasena(seleccionadas, longitud, conjuntos_caracteres):
+    """
+    Genera una contraseña basada en las opciones seleccionadas.
+    """
+    caracteres = "".join([secrets.choice(conjuntos_caracteres[i]) for i in seleccionadas])
+    restantes = "".join([conjuntos_caracteres[i] for i in seleccionadas])
+    adicionales = [secrets.choice(restantes) for _ in range(longitud - len(seleccionadas))]
+
+    generada = list(caracteres + "".join(adicionales))
+    secrets.SystemRandom().shuffle(generada)
+    contrasena = "".join(generada)
+
+    return contrasena
 
 
-def main():
-    print("Welcome to the Python Password Generator!")
+def fortaleza_contrasena(contrasena):
+    """
+    Determina la fortaleza de una contraseña.
+    """
+    if len(contrasena) <= LONGITUD_MIN_CONTRASENA:
+        return "Débil"
+    if re.search(r"\d|[A-Z]", contrasena) and re.search(r"[\W_]", contrasena):
+        return "Fuerte"
+    return "Media"
 
-    length = get_password_length()
 
-    charSets = {
-        "Lowercase": string.ascii_lowercase,
-        "Uppercase": string.ascii_uppercase,
-        "Numbers": string.digits,
-        "Symbols": string.punctuation,
+def principal():
+    """
+    Función principal del programa.
+    """
+    print("¡Bienvenido al Generador de Contraseñas en Python!")
+
+    longitud = obtener_longitud_contrasena()
+
+    conjuntos_caracteres = {
+        "Minúsculas": string.ascii_lowercase,
+        "Mayúsculas": string.ascii_uppercase,
+        "Números": string.digits,
+        "Símbolos": string.punctuation,
     }
 
-    selected = get_selected_options(charSets)
+    seleccionadas = obtener_opciones_seleccionadas(conjuntos_caracteres)
 
-    password = generate_password(selected, length, charSets)
+    contrasena = generar_contrasena(seleccionadas, longitud, conjuntos_caracteres)
 
-    print(f"Generated password: {password}")
+    print(f"Contraseña generada: {contrasena}")
 
     try:
-        pyperclip.copy(password)
+        pyperclip.copy(contrasena)
     except pyperclip.PyperclipException as e:
         print(
-            f"Could not copy the password to the clipboard: {e}. Please copy it manually."
+            f"No se pudo copiar la contraseña al portapapeles: {e}. Por favor, cópiala manualmente."
         )
 
-    print(f"Password strength: {password_strength(password)}")
+    print(f"Fuerza de la contraseña: {fortaleza_contrasena(contrasena)}")
 
 
 if __name__ == "__main__":
-    main()
+    principal()
